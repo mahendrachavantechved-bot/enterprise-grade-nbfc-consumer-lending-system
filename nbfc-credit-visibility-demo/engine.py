@@ -1,35 +1,25 @@
-import sys
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, BASE_DIR)
-
 from utils.yaml_loader import load_yaml
-from services.bureau_mock import pull_bureau
-from services.internal_score import compute_internal_score
-from services.composite_score import compute_composite
-from services.visualization import map_risk_band
 
-def run_credit_flow(applicant):
-    config = load_yaml(os.path.join(BASE_DIR, "config/credit_visibility.yaml"))
+CONFIG_PATH = "nbfc-credit-visibility-demo/config/nbfc-credit-visibility-config.yaml"
 
-    bureau = pull_bureau(applicant, config)
-    internal = compute_internal_score(applicant, config)
+def run_credit_flow():
+    config = load_yaml(CONFIG_PATH)
 
-    composite_score = compute_composite(
-        bureau,
-        internal,
-        config["composite_risk_score"]
+    # mock scores (demo-safe)
+    bureau_score = 720
+    internal_score = 680
+
+    score = int(
+        config["composite_risk_score"]["bureau_weight"] * bureau_score +
+        config["composite_risk_score"]["internal_weight"] * internal_score
     )
 
-    band = map_risk_band(
-        composite_score,
-        config["visualization_rules"]["score_bands"]
-    )
+    for band in config["visualization_rules"]["score_bands"]:
+        if band["min"] <= score <= band["max"]:
+            return {
+                "score": score,
+                "label": band["label"],
+                "color": band["color"]
+            }
 
-    return {
-        "bureau_score": bureau,
-        "internal_score": internal,
-        "composite_score": composite_score,
-        "risk_band": band
-    }
+    return {"score": score, "label": "Unknown", "color": "#999999"}
