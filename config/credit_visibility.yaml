@@ -1,0 +1,18 @@
+composite_risk_score:
+  bureau_weight: 0.65
+  internal_weight: 0.35
+
+visualization_rules:
+  score_bands:
+    - min: 750
+      max: 900
+      label: "Very Low Risk"
+    - min: 675
+      max: 749
+      label: "Low Risk"
+    - min: 600
+      max: 674
+      label: "Moderate Risk"
+    - min: 300
+      max: 599
+      label: "High Risk"
